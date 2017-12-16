@@ -38,7 +38,6 @@ private:
     std::queue<T> queue;
     std::mutex read_lock;
     std::mutex write_lock;
-    std::mutex exec_lock;
     std::mutex pause_lock;
 
     std::condition_variable invoke;
@@ -131,11 +130,11 @@ void Threader<T>::exec() {
 
     while (true) {
 
-        this->exec_lock.lock();
+        this->read_lock.lock();
 
         if (this->queue.empty()) {
 
-            this->exec_lock.unlock();
+            this->read_lock.unlock();
             if (this->inputEmpty) {
                 break;
             } else {
@@ -147,7 +146,7 @@ void Threader<T>::exec() {
         T number = this->queue.front();
         this->queue.pop();
 
-        this->exec_lock.unlock();
+        this->read_lock.unlock();
 
         std::string result = this->function(number);
 
